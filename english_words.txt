@@ -57019,6 +57019,7 @@ wharf
 wharfs
 wharves
 what
+whats
 whatever
 whatnot
 whatsoever
