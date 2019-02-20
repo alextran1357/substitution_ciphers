@@ -29,11 +29,13 @@ def word_decrypt(user_string):
 Input a string to check if it is a real sentence
 
 @param {string} string - string that is going to be checked
-@param {int} string_length_check - the amount of chars from the beginning that will be checked
-@param {int} char_check_length - the number of characters checked to see if it is an english word; either 4 or 5
+@param {int} string_length_check - the amount of chars from the beginning that will be checked. Must be greater than char_check_length
+@param {int} char_check_length - the number of characters checked to see if it is an english word; either 4 or 5 which are most common
 '''
 def check_string(string, string_length_check, char_check_length):
-    #Most common length for an english word is 4-5 characters
+    check_string = string[:string_length_check]
+    for i in range (string_length_check - char_check_length):
+       check_word(string[i:i + char_check_length])
     
 
 '''
@@ -44,6 +46,11 @@ Input a word to check if it exist in the list of words
 def check_word(word):
     print("Hello")
 
+def load_words():
+    with open('english_words.txt') as word_file:
+        valid_words = set(word_file.read().split())
+
+    return valid_words
 
 # Strings to use
 '''
@@ -58,6 +65,7 @@ def check_word(word):
 
 #Prompt the user to enter in the string they want to use
 print("Enter in the string to decrypt")
-user_string = input()
-
-word_decrypt(user_string)
+#user_string = input()
+english_words = load_words()
+#word_decrypt(user_string)
+check_string("hellhellehhellehehehe", 10, 4)
