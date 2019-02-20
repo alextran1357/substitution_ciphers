@@ -2,8 +2,9 @@
 Function to decrypt a string
 
 @param {string} user_string - string that user enters to be decrypted
+@param {set} word_set - set of words from english_words.txt
 '''
-def word_decrypt(user_string):
+def word_decrypt(user_string, word_set):
     #first check for cesear decryption
     MAX_ROT = 26
 
@@ -31,8 +32,9 @@ Input a string to check if it is a real sentence
 @param {string} string - string that is going to be checked
 @param {int} string_length_check - the amount of chars from the beginning that will be checked. Must be greater than char_check_length
 @param {int} char_check_length - the number of characters checked to see if it is an english word; either 4 or 5 which are most common
+@param {set} word_set - set of words from english_words.txt
 '''
-def check_string(string, string_length_check, char_check_length):
+def check_string(string, string_length_check, char_check_length, word_set):
     check_string = string[:string_length_check]
     for i in range (string_length_check - char_check_length):
        check_word(string[i:i + char_check_length])
@@ -42,10 +44,16 @@ def check_string(string, string_length_check, char_check_length):
 Input a word to check if it exist in the list of words
 
 @param {string} word - word that is going to be check against a list of english words
+@param {set} word_set - set of words from english_words.txt
 '''
-def check_word(word):
+def check_word(word, word_set):
+    #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  We can use binary search for quicker searching  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     print("Hello")
 
+'''
+Load the words from english_words.txt and puts everything into a set for easy search
+
+'''
 def load_words():
     with open('english_words.txt') as word_file:
         valid_words = set(word_file.read().split())
