@@ -30,6 +30,7 @@ def word_decrypt(user_string, word_set):
 
         if(check_string(string_list, initial_char_check, 3, word_set) > 0):
             # Checking for the percent of n number of letters to determine if it is a real sentence
+            # Check percentages because this program cannot split words yet
             if (float(check_string(string_list, len(string_list), 3, word_set) * 3 / len(string_list)) > threshold_percent or
                 float(check_string(string_list, len(string_list), 4, word_set) * 4 / len(string_list)) > threshold_percent or 
                 float(check_string(string_list, len(string_list), 5, word_set) * 5 / len(string_list)) > threshold_percent):
@@ -54,7 +55,31 @@ def check_string(string, string_length_check, char_length_check, word_set):
         if (check_word(string[i:i + char_length_check], word_set) == True):
             real_word_counter += 1
     return real_word_counter
-    
+
+'''
+Gets all the possible permutation of a string
+
+@param {list} lst - takes in a list of characters to get all the possible permutations
+
+@return {list} - returns the list of possible permutations
+'''
+
+def permutation(lst):
+    l = [] # empty list that will store current permutation 
+  
+    # Iterate the input(lst) and calculate the permutation 
+    for i in range(len(lst)): 
+        m = lst[i] 
+ 
+        # Extract lst[i] or m from the list.  remLst is 
+        # remaining list 
+        remLst = lst[:i] + lst[i+1:] 
+  
+        # Generating all permutations where m is first 
+        # element 
+        for p in permutation(remLst): 
+            l.append([m] + p) 
+        return l 
 
 '''
 Input a word to check if it exist in the list of words
