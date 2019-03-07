@@ -3,6 +3,7 @@ from pycipher import SimpleSubstitution as SimpleSub
 from ngram_score import ngram_score
 import random
 import re
+import string
 
 '''
 Function to decrypt a string
@@ -69,7 +70,7 @@ def word_decrypt_sub(word):
     ctext = re.sub('[^A-Z]', '', ctext.upper())
 
     maxkey = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-    maxscore = -99e9
+    maxscore = -99e9 # First generated key will always replace this
     parentscore, parentkey = maxscore, maxkey[:]
     # keep going until we are killed by the user
     i = 0
@@ -79,10 +80,10 @@ def word_decrypt_sub(word):
         # SimpleSub will replace the 'abc...' with the key e.g 'dje...'
         deciphered = SimpleSub(parentkey).decipher(ctext)
         parentscore = fitness.score(deciphered)
-        count = 0
 
         # If there are no improvement then we move to a different set of keys
         # Checking for improvements within 1000 iterations
+        count = 0
         while count < 1000:
             a = random.randint(0, 25)
             b = random.randint(0, 25)
@@ -146,6 +147,40 @@ def load_words():
 
     return valid_words
 
+'''
+Encrypt the string that the user enters in
+'''
+def encrpyt_string():
+    # Get string
+    print("Enter in the string to be encrypted:")
+    plaintext = input()
+
+    # Get key
+    user_key = input("Enter in the key. Leave input blank to generate a random key.")
+    if (user_key != ""):
+        # Checking is the key that the user enters in valid, if not generate a new string
+        alphabet = set(string.ascii_lowercase)
+        if (set(user_key.lower()) >= alphabet == False):
+            print("Key invalid. Not all letters of the alphabet are present. Enter in another key. Leave blank for a random key")
+            user_key = ""
+    print("")
+
+    if (user_key == ""):
+        # Generating a new key
+        alphabet = 'abcdefghijklmnopqrstuvwxyz'
+        alphabet = list(alphabet)
+        changed_alpha = alphabet.copy()
+        random.shuffle(changed_alpha)
+        user_key = ''.join(changed_alpha)
+
+    # Prints
+    print("plaintext:  ", plaintext)
+    print("user_key:   ", user_key)
+
+    # encrypt
+    keyMap = dict(zip(user_key, alphabet))
+    print("encrypt:    ", ''.join(keyMap.get(c.lower(), c) for c in plaintext))
+
 
 # Strings to use
 '''
@@ -159,8 +194,18 @@ def load_words():
 '''
 
 #Prompt the user to enter in the string they want to use
-print("Enter in the string to decrypt")
-user_string = input()
 
-# Load word from text document
-word_decrypt(user_string, load_words())
+print("Select one of the following options:")
+print("1. Decrypt a message")
+print("2. Encrypt a message")
+user_choice = input()
+
+if (user_choice == 1):
+    print("Enter in the string to decrypt:")
+    user_string = input()
+    print("")
+
+    # Load word from text document
+    word_decrypt(user_string, load_words())
+else:
+    encrpyt_string()
