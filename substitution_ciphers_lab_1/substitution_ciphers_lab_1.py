@@ -1,4 +1,8 @@
 from itertools import permutations
+from pycipher import SimpleSubstitution as SimpleSub
+from ngram_score import ngram_score
+import random
+import re
 
 '''
 Function to decrypt a string
@@ -7,6 +11,9 @@ Function to decrypt a string
 @param {set} word_set - set of words from english_words.txt
 '''
 def word_decrypt(user_string, word_set):
+    # This will check to see if we need to check for substitution encryption instead
+    start_sub_decrypt = True;
+
     #first check for cesear decryption since it is the quickest one to check
     MAX_ROT = 26
 
@@ -15,10 +22,14 @@ def word_decrypt(user_string, word_set):
     # Change the string into a list to work with the characters easier
     string_list = list(user_string)
 
+    print("Checking for caesar cipher...")
     #Implement a rotation
     for rotation_num in range (MAX_ROT):
         initial_char_check = 20 # Number of characters checked to determine if check should continue
-        threshold_percent = .3 # Precent of 4 letter words in the paragraph to make it a real sentence
+
+        # Precent of 4 letter words in the paragraph to make it a real sentence 
+        # Higher = better
+        threshold_percent = .4
         string_list = list(user_string)
 
         # Use ASCII code to rotate the letters 97-122
@@ -37,8 +48,64 @@ def word_decrypt(user_string, word_set):
                 float(check_string(string_list, len(string_list), 4, word_set) * 4 / len(string_list)) > threshold_percent or 
                 float(check_string(string_list, len(string_list), 5, word_set) * 5 / len(string_list)) > threshold_percent):
                 print(string_list)
-        
+                start_sub_decrypt = False;
+
     # Next check for substitution encryption
+    if (start_sub_decrypt == True):
+        print("Caesar cipher failed")
+        print("")
+        print("Checking for substitution cipher...")
+        word_decrypt_sub(user_string)
+
+'''
+This function will decrypt a word that is using substitution
+
+@param word {string} - the word that we want to decrypt
+'''
+def word_decrypt_sub(word):
+    fitness = ngram_score('english_quadgrams.txt') # load our quadgram statistics
+
+    ctext = word
+    ctext = re.sub('[^A-Z]', '', ctext.upper())
+
+    maxkey = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    maxscore = -99e9
+    parentscore, parentkey = maxscore, maxkey[:]
+    # keep going until we are killed by the user
+    i = 0
+    while (True):
+        i = i + 1
+        random.shuffle(parentkey)
+        # SimpleSub will replace the 'abc...' with the key e.g 'dje...'
+        deciphered = SimpleSub(parentkey).decipher(ctext)
+        parentscore = fitness.score(deciphered)
+        count = 0
+
+        # If there are no improvement then we move to a different set of keys
+        # Checking for improvements within 1000 iterations
+        while count < 1000:
+            a = random.randint(0, 25)
+            b = random.randint(0, 25)
+            child = parentkey[:]
+
+            # swap two characters in the child
+            child[a], child[b] = child[b], child[a]
+            deciphered = SimpleSub(child).decipher(ctext)
+            score = fitness.score(deciphered)
+            # if the child was better, replace the parent with it
+            if score > parentscore:
+                parentscore = score
+                parentkey = child[:]
+                count = 0
+            count = count + 1
+        # keep track of best score seen so far
+        if parentscore > maxscore:
+            maxscore, maxkey = parentscore, parentkey[:]
+            print ('\nbest score so far:',maxscore,'on iteration',i)
+            ss = SimpleSub(maxkey)
+            print ('    best key: ' + ''.join(maxkey))
+            print ('    plaintext: ' + ss.decipher(ctext))
+        
 
 '''
 Input a string to check if it is a real sentence
@@ -57,39 +124,6 @@ def check_string(string, string_length_check, char_length_check, word_set):
         if (check_word(string[i:i + char_length_check], word_set) == True):
             real_word_counter += 1
     return real_word_counter
-
-'''
-Gets all the possible permutation of a string
-
-@param {list} lst - takes in a list of characters to get all the possible permutations
-
-@return {list} - returns the list of possible permutations
-'''
-
-def permutation(lst):
-    # If lst is empty then there are no permutations 
-    if len(lst) == 0: 
-        return [] 
-  
-    # If there is only one element in lst then, only one permuatation is possible 
-    if len(lst) == 1: 
-        return [lst] 
-  
-    # Find the permutations for lst if there are more than 1 characters 
-    l = [] # empty list that will store current permutation 
-    print(l)
-    # Iterate the input(lst) and calculate the permutation 
-    for i in range(len(lst)): 
-        m = lst[i] 
-  
-        # Extract lst[i] or m from the list. remLst is remaining list
- 
-        remLst = lst[:i] + lst[i+1:] 
-  
-        # Generating all permutations where m is first element  
-        for p in permutation(remLst): 
-            l.append([m] + p) 
-    return l 
 
 '''
 Input a word to check if it exist in the list of words
@@ -125,11 +159,8 @@ def load_words():
 '''
 
 #Prompt the user to enter in the string they want to use
-#print("Enter in the string to decrypt")
-#user_string = input()
+print("Enter in the string to decrypt")
+user_string = input()
 
-## Load word from text document
-#english_words = load_words()
-#word_decrypt(user_string, english_words)
-yes = list('ABCD')
-permutation(yes)
+# Load word from text document
+word_decrypt(user_string, load_words())
